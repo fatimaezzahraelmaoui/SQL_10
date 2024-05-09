@@ -1,0 +1,55 @@
+
+   SELECT F.titre AS formation, S.nom_session, S.date_debut, S.date_fin
+   FROM Formations F
+   INNER JOIN Sessions S ON F.code_formation = S.formation_code;
+
+   SELECT F.titre AS formation, E.nom, E.prenom
+   FROM Formations F
+   INNER JOIN Inscriptions I ON F.code_formation = I.formation_code
+   INNER JOIN Etudiants E ON I.etudiant_cin = E.cin
+   ORDER BY F.titre;
+
+   SELECT 
+       SUM(CASE WHEN I.type_cours = 'distancielle' THEN 1 ELSE 0 END) AS inscriptions_distancielles,
+       SUM(CASE WHEN I.type_cours = 'presentielle' THEN 1 ELSE 0 END) AS inscriptions_presentielles
+   FROM Inscriptions I
+   INNER JOIN Sessions S ON I.session_id = S.session_id
+   INNER JOIN Formations F ON S.formation_code = F.code_formation
+   WHERE F.titre = 'web développement';
+
+   SELECT F.titre AS formation, COUNT(I.inscription_id) AS nombre_inscriptions_distancielles
+   FROM Formations F
+   INNER JOIN Sessions S ON F.code_formation = S.formation_code
+   INNER JOIN Inscriptions I ON S.session_id = I.session_id
+   WHERE I.type_cours = 'distancielle'
+   GROUP BY F.titre
+   HAVING COUNT(I.inscription_id) >= 3
+   ORDER BY nombre_inscriptions_distancielles DESC;
+
+   SELECT S.nom_specialite, F.titre, F.duree, F.prix
+   FROM Formations F
+   INNER JOIN Specialites S ON F.specialite_id = S.specialite_id
+   WHERE S.active = 1
+   ORDER BY S.nom_specialite DESC;
+
+   (SELECT F.titre AS formation, COUNT(I.inscription_id) AS nombre_inscriptions_distancielles
+   FROM Formations F
+   INNER JOIN Sessions S ON F.code_formation = S.formation_code
+   INNER JOIN Inscriptions I ON S.session_id = I.session_id
+   WHERE I.type_cours = 'distancielle'
+   GROUP BY F.titre
+   HAVING COUNT(I.inscription_id) >= 4)
+   UNION
+   (SELECT F.titre AS formation, COUNT(I.inscription_id) AS nombre_inscriptions_presentielles
+   FROM Formations F
+   INNER JOIN Sessions S ON F.code_formation = S.formation_code
+   INNER JOIN Inscriptions I ON S.session_id = I.session_id
+   WHERE I.type_cours = 'presentielle'
+   GROUP BY F.titre
+   HAVING COUNT(I.inscription_id) >= 4);
+
+   SELECT YEAR(S.date_debut) AS annee, MONTH(S.date_debut) AS mois, SUM(F.prix) AS total_prix
+   FROM Formations F
+   INNER JOIN Sessions S ON F.code_formation = S.formation_code
+   GROUP BY YEAR(S.date_debut), MONTH(S.date_debut)
+   ORDER BY annee, mois;
